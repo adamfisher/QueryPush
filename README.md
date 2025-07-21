@@ -1,4 +1,4 @@
-# QueryPush 🫸
+# QueryPush 🛢⚡🌐
 
 Cross-platform database query scheduler that executes cron-based queries and sends results to HTTP endpoints with comprehensive retry logic, alerting, and state management.
 
