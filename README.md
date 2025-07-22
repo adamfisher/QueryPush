@@ -138,7 +138,7 @@ QueryPush uses `appsettings.json` for all configuration. Below is a comprehensiv
 | `queries[].database` | string | ✓ | | Reference to database name |
 | `queries[].endpoint` | string | ✓ | | Reference to endpoint name |
 | `queries[].enabled` | boolean | | `true` | Enable/disable query |
-| `queries[].runOnStartup` | boolean | | `true` | Execute immediately if never run |
+| `queries[].runOnStartup` | boolean | | `true` | Execute immediately on startup |
 | `queries[].timeoutSeconds` | integer | | `30` | Query timeout (1-3600) |
 | `queries[].maxRows` | integer | | `int.MaxValue` | Maximum rows to process (1-∞) |
 | `queries[].payloadFormat` | enum | | `JsonArray` | Data format: `JsonArray`, `JsonLines` |
