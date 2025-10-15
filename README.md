@@ -191,7 +191,7 @@ Variables support offset and formatting:
 QueryPush maintains state in `QueryState.json`:
 - **Last run timestamps** per query (prevents duplicate execution)
 - **Alert timestamps** per query/type (implements cooldown throttling)
-- **Cross-platform location**: `%APPDATA%\QueryPush\` (Windows) or `~/.local/share/QueryPush/` (Linux/macOS)
+- **Storage location**: Stored in the same directory as the application executable
 
 ## Example Configuration (Minimal)
 

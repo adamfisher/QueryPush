@@ -21,10 +21,8 @@ public class StateManager(ILogger<StateManager> logger) : IStateManager
 
     private static string GetStateFilePath()
     {
-        var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        var queryPushPath = Path.Combine(appDataPath, "QueryPush");
-        Directory.CreateDirectory(queryPushPath);
-        return Path.Combine(queryPushPath, "QueryState.json");
+        var currentDirectory = AppContext.BaseDirectory;
+        return Path.Combine(currentDirectory, "QueryState.json");
     }
 
     public DateTime? GetLastRun(string queryName)
