@@ -46,10 +46,10 @@ For databases without native support, use the ODBC provider. **ODBC drivers must
 
 ### Quick Start
 
-1. Choose your database provider (native or ODBC)
-2. If using ODBC, install required drivers for your databases
-3. Configure `appsettings.json` with connection strings
-4. Run `dotnet run` or deploy as a service
+1. Download your platform-specific binary version from the [releases](https://github.com/adamfisher/QueryPush/releases) tab
+2. If using ODBC, install the required drivers for your databases
+3. Configure `appsettings.json` with connection strings for databases, the queries to execute, and the endpoints to send the data to (examples below)
+4. Run `QueryPush.exe` at the command line or deploy it as a background service to continuously run
 
 ## Cross-Platform Deployment
 
@@ -77,18 +77,6 @@ install-windows.bat
 ### macOS (Console Mode)
 ```bash
 ./QueryPush
-```
-
-## Build & Publish
-
-```bash
-# Development build
-dotnet build
-
-# Platform-specific releases
-dotnet publish -r win-x64 --self-contained -c Release
-dotnet publish -r linux-x64 --self-contained -c Release
-dotnet publish -r osx-x64 --self-contained -c Release
 ```
 
 ## Configuration Reference
@@ -296,3 +284,15 @@ Here is an example of a configuration with a single database query that runs dai
 - **Windows Event Log**: When running as service (`Application` log, source `QueryPush`)
 - **Linux Journal**: Automatic via systemd integration
 - **Configuration validation**: Detailed startup error messages
+
+## Build & Publish
+
+```bash
+# Development build
+dotnet build
+
+# Platform-specific releases
+dotnet publish -r win-x64 --self-contained -c Release
+dotnet publish -r linux-x64 --self-contained -c Release
+dotnet publish -r osx-x64 --self-contained -c Release
+```
