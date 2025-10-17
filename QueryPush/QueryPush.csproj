@@ -12,10 +12,10 @@
     <PublishReadyToRun>false</PublishReadyToRun>
     <SuppressTrimAnalysisWarnings>true</SuppressTrimAnalysisWarnings>
     <NoWarn>$(NoWarn);IL2026;IL2104;IL2105;IL2106;IL2107</NoWarn>
-    <Version>1.1.0</Version>
-    <AssemblyVersion>1.1.0.0</AssemblyVersion>
-    <FileVersion>1.1.0.0</FileVersion>
-    <ProductVersion>1.1.0</ProductVersion>
+    <Version>1.2.0</Version>
+    <AssemblyVersion>1.2.0.0</AssemblyVersion>
+    <FileVersion>1.2.0.0</FileVersion>
+    <ProductVersion>1.2.0</ProductVersion>
     <Company>Octane Software</Company>
     <Product>QueryPush</Product>
     <Description>Cross-platform database query scheduler with cron-based execution</Description>

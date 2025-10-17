@@ -4,7 +4,7 @@ Cross-platform database query scheduler that executes cron-based queries and sen
 
 ## Features
 
-- **Multi-Database Support**: All SQL databases via ODBC
+- **Multi-Database Support**: Native providers (SQL Server, MySQL, PostgreSQL, Oracle, SQLite) or ODBC for other databases
 - **Cron Scheduling**: Standard cron expressions with NCrontab
 - **HTTP Integration**: Configurable endpoints with headers and multiple HTTP methods
 - **Template Variables**: Dynamic query parameters with formatting and offsets
@@ -19,9 +19,18 @@ Cross-platform database query scheduler that executes cron-based queries and sen
 
 ### Prerequisites
 
-QueryPush uses ODBC for database connectivity. **ODBC drivers must be installed on each target system** before running the application.
+QueryPush supports both **native database providers** and **ODBC** for database connectivity.
 
-**Required drivers by database type:**
+**Native Providers (Recommended)**
+Native providers are built into QueryPush and require no additional driver installation:
+- **SQL Server** (`sqlserver`)
+- **MySQL** (`mysql`)
+- **PostgreSQL** (`postgres` or `postgresql`)
+- **Oracle** (`oracle`)
+- **SQLite** (`sqlite`)
+
+**ODBC Provider**
+For databases without native support, use the ODBC provider. **ODBC drivers must be installed on each target system**:
 - **SQL Server**: [Microsoft ODBC Driver 17/18 for SQL Server](https://learn.microsoft.com/en-us/sql/connect/odbc/download-odbc-driver-for-sql-server)
 - **MySQL**: [MySQL ODBC 8.0 Driver](https://dev.mysql.com/downloads/connector/odbc/)
 - **PostgreSQL**: [PostgreSQL ODBC Driver (psqlODBC)](https://odbc.postgresql.org/)
@@ -29,7 +38,7 @@ QueryPush uses ODBC for database connectivity. **ODBC drivers must be installed 
 - **SQLite**: [SQLite ODBC Driver](http://www.ch-werner.de/sqliteodbc/) (third-party)
 - **MariaDB**: [MariaDB ODBC Driver](https://mariadb.com/downloads/connectors/connectors-data-access/odbc-connector/)
 
-**Installation notes:**
+**ODBC Installation notes:**
 - Drivers are platform-specific (Windows/Linux/macOS)
 - Must match your system architecture (x64/x86)
 - Required on every machine where QueryPush runs
@@ -37,9 +46,10 @@ QueryPush uses ODBC for database connectivity. **ODBC drivers must be installed 
 
 ### Quick Start
 
-1. Install required ODBC drivers for your databases
-2. Configure `appsettings.json` with ODBC connection strings
-3. Run `dotnet run` or deploy as a service
+1. Choose your database provider (native or ODBC)
+2. If using ODBC, install required drivers for your databases
+3. Configure `appsettings.json` with connection strings
+4. Run `dotnet run` or deploy as a service
 
 ## Cross-Platform Deployment
 
@@ -89,7 +99,72 @@ QueryPush uses `appsettings.json` for all configuration. Below is a comprehensiv
 | Property | Type | Required | Default | Description |
 |----------|------|----------|---------|-------------|
 | `databases[].name` | string | ✓ | | Unique database identifier |
-| `databases[].connectionString` | string | ✓ | | ODBC connection string |
+| `databases[].provider` | enum | | `odbc` | Database provider: `odbc`, `sqlserver`, `mysql`, `oracle`, `postgres`/`postgresql`, `sqlite` |
+| `databases[].connectionString` | string | ✓ | | Provider-specific connection string |
+
+#### Database Providers
+
+QueryPush uses the `DatabaseConnectionFactory` to create connections based on the configured provider. Each provider supports native connection strings:
+
+**SQL Server** (`sqlserver`)
+```json
+{
+  "name": "MyDb",
+  "provider": "sqlserver",
+  "connectionString": "Server=localhost;Database=MyApp;Integrated Security=true;"
+}
+```
+
+**MySQL** (`mysql`)
+```json
+{
+  "name": "MyDb",
+  "provider": "mysql",
+  "connectionString": "Server=localhost;Database=myapp;Uid=username;Pwd=password;"
+}
+```
+
+**PostgreSQL** (`postgres` or `postgresql`)
+```json
+{
+  "name": "MyDb",
+  "provider": "postgres",
+  "connectionString": "Host=localhost;Database=myapp;Username=postgres;Password=password;"
+}
+```
+
+**Oracle** (`oracle`)
+```json
+{
+  "name": "MyDb",
+  "provider": "oracle",
+  "connectionString": "Data Source=localhost:1521/ORCL;User Id=username;Password=password;"
+}
+```
+
+**SQLite** (`sqlite`)
+```json
+{
+  "name": "MyDb",
+  "provider": "sqlite",
+  "connectionString": "Data Source=/path/to/database.db"
+}
+```
+
+**ODBC** (`odbc` - default)
+```json
+{
+  "name": "MyDb",
+  "provider": "odbc",
+  "connectionString": "Driver={ODBC Driver 17 for SQL Server};Server=localhost;Database=MyApp;Trusted_Connection=yes;"
+}
+```
+
+**Notes:**
+- The `provider` field defaults to `odbc` for backward compatibility
+- Native providers offer better performance and don't require external driver installation
+- Connection string formats vary by provider - see provider documentation for details
+- If `provider` is omitted, the system uses ODBC by default
 
 ### Endpoint Configuration
 | Property | Type | Required | Default | Description |
@@ -183,7 +258,7 @@ Variables support offset and formatting:
 
 - **Concurrent Execution Protection**: Each query is protected by `[DisallowConcurrentExecution]` - if a query is still running when its next scheduled time arrives, the new execution is skipped
 - **State Persistence**: Last run timestamps prevent duplicate executions across application restarts
-- **Database Connection Validation**: ODBC connections are tested at startup with detailed error messages for missing drivers
+- **Database Connection Validation**: The `DatabaseConnectionFactory` validates connections at startup with detailed error messages for unsupported providers or connection failures
 - **Configuration Validation**: Comprehensive validation of all settings, references, and file paths before execution begins
 
 ## State Management
@@ -195,14 +270,15 @@ QueryPush maintains state in `QueryState.json`:
 
 ## Example Configuration (Minimal)
 
-Here is an example of a configuration with a single database query that runs daily at 9:00 AM:
+Here is an example of a configuration with a single database query that runs daily at 9:00 AM using native SQL Server provider:
 
 ```json
 {
   "databases": [
     {
       "name": "MyDb",
-      "connectionString": "Driver={ODBC Driver 17 for SQL Server};Server=localhost;Database=MyApp;Trusted_Connection=yes;"
+      "provider": "sqlserver",
+      "connectionString": "Server=localhost;Database=MyApp;Integrated Security=true;"
     }
   ],
   "endpoints": [
@@ -230,7 +306,13 @@ Here is an example of a configuration with a single database query that runs dai
   "databases": [
     {
       "name": "MainDb",
-      "connectionString": "Driver={ODBC Driver 17 for SQL Server};Server=localhost;Database=MyApp;Trusted_Connection=yes;"
+      "provider": "sqlserver",
+      "connectionString": "Server=localhost;Database=MyApp;Integrated Security=true;"
+    },
+    {
+      "name": "AnalyticsDb",
+      "provider": "postgres",
+      "connectionString": "Host=analytics.example.com;Database=analytics;Username=readonly;Password=secret;"
     }
   ],
   "endpoints": [
