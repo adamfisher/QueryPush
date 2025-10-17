@@ -12,10 +12,10 @@
     <PublishReadyToRun>false</PublishReadyToRun>
     <SuppressTrimAnalysisWarnings>true</SuppressTrimAnalysisWarnings>
     <NoWarn>$(NoWarn);IL2026;IL2104;IL2105;IL2106;IL2107</NoWarn>
-    <Version>1.0.0</Version>
-    <AssemblyVersion>1.0.0.0</AssemblyVersion>
-    <FileVersion>1.0.0.0</FileVersion>
-    <ProductVersion>1.0.0</ProductVersion>
+    <Version>1.1.0</Version>
+    <AssemblyVersion>1.1.0.0</AssemblyVersion>
+    <FileVersion>1.1.0.0</FileVersion>
+    <ProductVersion>1.1.0</ProductVersion>
     <Company>Octane Software</Company>
     <Product>QueryPush</Product>
     <Description>Cross-platform database query scheduler with cron-based execution</Description>
@@ -34,7 +34,6 @@
 
     <PackageReference Include="NCrontab" Version="3.4.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-    <PackageReference Include="System.Data.Odbc" Version="9.0.10" />
     <PackageReference Include="System.Text.Json" Version="9.0.10" />
     <PackageReference Include="Serilog.Extensions.Hosting" Version="9.0.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
@@ -44,6 +43,14 @@
     <PackageReference Include="Serilog.Extensions.Logging" Version="9.0.2" />
     <PackageReference Include="Quartz" Version="3.15.0" />
     <PackageReference Include="Quartz.Extensions.Hosting" Version="3.15.0" />
+
+    <!-- Database Providers -->
+    <PackageReference Include="System.Data.Odbc" Version="9.0.10" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.2" />
+    <PackageReference Include="MySql.Data" Version="9.1.0" />
+    <PackageReference Include="Oracle.ManagedDataAccess.Core" Version="23.7.0" />
+    <PackageReference Include="Npgsql" Version="8.0.5" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.10" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,5 +1,4 @@
 using System.Data;
-using System.Data.Odbc;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
 using QueryPush.Configuration;
@@ -13,6 +12,7 @@ public interface IDatabaseService
 
 public class DatabaseService(
     IOptionsMonitor<QueryPushSettings> options,
+    IDatabaseConnectionFactory connectionFactory,
     ILogger<DatabaseService> logger) : IDatabaseService
 {
     public async Task<IEnumerable<Dictionary<string, object>>> ExecuteQueryAsync(string databaseName, string query, int timeoutSeconds, int maxRows)
@@ -24,17 +24,17 @@ public class DatabaseService(
             throw new InvalidOperationException($"Database '{databaseName}' not found");
         }
 
-        logger.LogInformation("Executing query on database '{DatabaseName}' (timeout: {TimeoutSeconds}s, max rows: {MaxRows})", 
+        logger.LogInformation("Executing query on database '{DatabaseName}' (timeout: {TimeoutSeconds}s, max rows: {MaxRows})",
             databaseName, timeoutSeconds, maxRows);
 
         var stopwatch = System.Diagnostics.Stopwatch.StartNew();
         try
         {
-            var results = await ExecuteOdbcQueryAsync(database, query, timeoutSeconds, maxRows);
+            var results = await ExecuteDatabaseQueryAsync(database, query, timeoutSeconds, maxRows);
 
             stopwatch.Stop();
             var resultCount = results.Count();
-            logger.LogInformation("Query completed successfully. Returned {ResultCount} rows in {ElapsedMs}ms", 
+            logger.LogInformation("Query completed successfully. Returned {ResultCount} rows in {ElapsedMs}ms",
                 resultCount, stopwatch.ElapsedMilliseconds);
 
             return results;
@@ -42,21 +42,23 @@ public class DatabaseService(
         catch (Exception ex)
         {
             stopwatch.Stop();
-            logger.LogError(ex, "Query execution failed on database '{DatabaseName}' after {ElapsedMs}ms", 
+            logger.LogError(ex, "Query execution failed on database '{DatabaseName}' after {ElapsedMs}ms",
                 databaseName, stopwatch.ElapsedMilliseconds);
             throw;
         }
     }
 
-    private async Task<IEnumerable<Dictionary<string, object>>> ExecuteOdbcQueryAsync(DatabaseConfig database, string query, int timeoutSeconds, int maxRows)
+    private async Task<IEnumerable<Dictionary<string, object>>> ExecuteDatabaseQueryAsync(DatabaseConfig database, string query, int timeoutSeconds, int maxRows)
     {
-        logger.LogDebug("Connecting to database '{DatabaseName}' via ODBC", database.Name);
-        
-        await using var connection = new OdbcConnection(database.ConnectionString);
-        await connection.OpenAsync();
+        logger.LogDebug("Connecting to database '{DatabaseName}' using provider '{Provider}'", database.Name, database.Provider);
+
+        await using var connection = await connectionFactory.CreateConnectionAsync(database);
         logger.LogDebug("Connected to database '{DatabaseName}'", database.Name);
-        
-        await using var command = new OdbcCommand(query, connection) { CommandTimeout = timeoutSeconds };
+
+        await using var command = connection.CreateCommand();
+        command.CommandText = query;
+        command.CommandTimeout = timeoutSeconds;
+
         await using var reader = await command.ExecuteReaderAsync();
         return ReadResults(reader, maxRows);
     }

@@ -50,6 +50,7 @@ public class Program
     private static void RegisterServices(IServiceCollection services)
     {
         services.AddHttpClient();
+        services.AddSingleton<IDatabaseConnectionFactory, DatabaseConnectionFactory>();
         services.AddSingleton<IConfigurationValidator, ConfigurationValidator>();
         services.AddSingleton<IStateManager, StateManager>();
         services.AddSingleton<IVariableReplacer, VariableReplacer>();
@@ -59,7 +60,7 @@ public class Program
         services.AddScoped<IAlertService, AlertService>();
         services.AddScoped<IQueryScheduler, QueryScheduler>();
         services.AddScoped<IQueryExecutor, QueryExecutor>();
-        
+
         services.AddQuartz();
         services.AddQuartzHostedService(opt => opt.WaitForJobsToComplete = true);
         services.AddScoped<QueryJob>();

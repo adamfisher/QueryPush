@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using System.Data.Odbc;
 using Microsoft.Extensions.Options;
 using QueryPush.Configuration;
 
@@ -10,7 +9,9 @@ public interface IConfigurationValidator
     void ValidateConfiguration();
 }
 
-public class ConfigurationValidator(IOptionsMonitor<QueryPushSettings> options) : IConfigurationValidator
+public class ConfigurationValidator(
+    IOptionsMonitor<QueryPushSettings> options,
+    IDatabaseConnectionFactory connectionFactory) : IConfigurationValidator
 {
     public void ValidateConfiguration()
     {
@@ -57,21 +58,25 @@ public class ConfigurationValidator(IOptionsMonitor<QueryPushSettings> options) 
         Validator.TryValidateObject(obj, context, results, validateAllProperties: true);
     }
 
-    private static void ValidateDatabaseConnection(DatabaseConfig database, List<ValidationResult> results)
+    private void ValidateDatabaseConnection(DatabaseConfig database, List<ValidationResult> results)
     {
         try
         {
-            using var connection = new OdbcConnection(database.ConnectionString);
+            using var connection = connectionFactory.CreateConnection(database);
             connection.Open();
             connection.Close();
         }
+        catch (NotSupportedException ex)
+        {
+            results.Add(new ValidationResult($"Unsupported provider for database '{database.Name}': {ex.Message}"));
+        }
         catch (Exception ex) when (ex.Message.Contains("driver", StringComparison.OrdinalIgnoreCase))
         {
-            results.Add(new ValidationResult($"ODBC driver missing or invalid for database '{database.Name}': {ex.Message}"));
+            results.Add(new ValidationResult($"Database driver missing or invalid for database '{database.Name}' (provider: {database.Provider}): {ex.Message}"));
         }
         catch (Exception ex)
         {
-            results.Add(new ValidationResult($"Cannot connect to database '{database.Name}': {ex.Message}"));
+            results.Add(new ValidationResult($"Cannot connect to database '{database.Name}' using provider '{database.Provider}': {ex.Message}"));
         }
     }
 
